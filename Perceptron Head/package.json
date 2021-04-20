@@ -1,0 +1,30 @@
+{
+  "name": "perceptron-head",
+  "version": "1.0.0",
+  "description": "A twitter bot with a neural network",
+  "main": "ml.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shameel-Fazul/Perceptron-Head.git"
+  },
+  "keywords": [
+    "machine",
+    "learning"
+  ],
+  "author": "Shameel Fazul",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Shameel-Fazul/Perceptron-Head/issues"
+  },
+  "homepage": "https://github.com/Shameel-Fazul/Perceptron-Head#readme",
+  "dependencies": {
+    "needle": "^2.6.0",
+    "puppeteer": "^8.0.0",
+    "serve-handler": "^6.1.3",
+    "socket.io": "^4.0.1",
+    "twit": "^2.2.11"
+  }
+}
