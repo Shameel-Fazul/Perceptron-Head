@@ -7,13 +7,13 @@ const fs  = require("fs");
 const socketio = require('socket.io');
 
 var T = new Twit({
-  consumer_key:         'DLQpDLbvqmg3GweSgm4ftKHV7',
-  consumer_secret:      'b97ltz6y0WRt5Ytlv1dcsZvX7SOpPAiKGXYYn9fH6Np5V7c7ZL',
-  access_token:         '3230566964-4wdrMbUTXc8sF04eaZFQKw2INuuzj4nsaRpy75R',
-  access_token_secret:  'OfeeB1zNI1Tb7bbJX3UtqxYxiigDf6IJnUWTEezySPDFO',
+  consumer_key:         'token',
+  consumer_secret:      'token',
+  access_token:         'token-token',
+  access_token_secret:  'token',
 })
 
-const TOKEN = 'AAAAAAAAAAAAAAAAAAAAAO%2F5OgEAAAAAZ98%2FS5tcjTwkAjDgjnU5y%2BIcjMs%3DaRi3xnnUAQd9IEnVSDC8f7X1VQGnLGTORa5w9FDXa9FeBXLMzi';
+const TOKEN = 'token%token%token%token';
 const rulesURL = 'https://api.twitter.com/2/tweets/search/stream/rules';
 const streamURL = 'https://api.twitter.com/2/tweets/search/stream?media.fields=url&tweet.fields=public_metrics,attachments&expansions=author_id,attachments.media_keys';
 const rules = [{ value: 'to:Breaking911 is:reply' }]
