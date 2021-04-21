@@ -3,17 +3,16 @@ const handler = require('serve-handler');
 const needle = require('needle');
 const Twit = require('twit')
 const puppeteer = require("puppeteer");
-const fs  = require("fs");
 const socketio = require('socket.io');
 
 var T = new Twit({
-  consumer_key:         'token',
-  consumer_secret:      'token',
-  access_token:         'token-token',
-  access_token_secret:  'token',
+  consumer_key:         '',
+  consumer_secret:      '',
+  access_token:         '',
+  access_token_secret:  '',
 })
 
-const TOKEN = 'token%token%token%token';
+const TOKEN = '';
 const rulesURL = 'https://api.twitter.com/2/tweets/search/stream/rules';
 const streamURL = 'https://api.twitter.com/2/tweets/search/stream?media.fields=url&tweet.fields=public_metrics,attachments&expansions=author_id,attachments.media_keys';
 const rules = [{ value: 'to:Breaking911 is:reply' }]
@@ -69,7 +68,7 @@ async function deleteRules(rules) {
     return response.body
 }
 
-function streamTweets(socket) {
+function streamTweets() {
     const stream = needle.get(streamURL, {
       headers: {
         Authorization: `Bearer ${TOKEN}`,
@@ -79,22 +78,51 @@ function streamTweets(socket) {
     stream.on('data', async (data) => {
       try {
         const json = JSON.parse(data);
-        const text = json.data.text.split(" ").slice(1);
-        if (text.length >= 2) {
-            T.post('statuses/update/:id', { status: `Tweet with a specific keyword, ${text.toString()} is not specific.`, in_reply_to_status_id: `${json.data.id}` }, (err, data, response) => {
-                console.log(data)
-            })
-        } else {
+        const text = json.data.text.split(" ").shift();
+        const keyword = text.shift();
+        const command = text.slice(0, 1);
+
+        switch(command) {
+          case 'learn':
+            if (keyword.length >= 3) {
+              T.post('statuses/update', { status: `Tweet with a specific keyword, ${text.toString()} is not specific.`, in_reply_to_status_id: `${json.data.id}` }, (err, data, response) => {
+                  console.log(`[ML] > ${data} keyword is not specific`);
+              });
+            } else {
+              const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+              const page = await browser.newPage();
+              page.on("console", async (res) => console.log(res.text()));
+              io.on('connection', () => console.log('[ML] > connected to the client'));
+              await page.goto("https://perceptron-head.herokuapp.com/public/");
+              page.evaluate("ml5.version").then(version => console.log(`[ML] > ml5 ${version} has loaded`));
+              const data = { label: keyword, image: json.includes.attachment.url };
+              io.emit('learn', data);
+              T.post('statuses/update', { status: `Thanks, now I know what a ${keyword} looks like.`, in_reply_to_status_id: `${json.data.id}` }, (err, data, response) => {
+                console.log('[ML] > learning complete');
+                browser.close();
+              });
+            }       
+            break;
+          case 'predict':
             const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
             const page = await browser.newPage();
+            page.on("console", async (res) => console.log(res.text()));
             io.on('connection', () => console.log('[ML] > connected to the client'));
             await page.goto("https://perceptron-head.herokuapp.com/public/");
             page.evaluate("ml5.version").then(version => console.log(`[ML] > ml5 ${version} has loaded`));
-            io.emit('predict', json.includes.attachment);
-        }       
+            io.emit('predict', json.includes.attachment.url);
+            io.on('result', (data) => {
+              T.post('statuses/update', { status: `Based on what I've learnt, I think it's a ${data}`, in_reply_to_status_id: `${json.data.id}` }, (err, data, response) => {
+                console.log('[ML] > prediction complete');
+                browser.close();
+              });
+            });
+            break;
+          default:
+            console.log('[ML] > command did not match')
+        }    
       } catch (error) {}
     })
-  
     return stream
 }
 
@@ -112,12 +140,12 @@ function streamTweets(socket) {
 
     let timeout = 0
     filteredStream.on('timeout', () => {
-      console.warn('A connection error occurred. Reconnecting…')
+      console.warn('[ML] > a connection error occurred. Reconnecting…')
       setTimeout(() => {
         timeout++
-        streamTweets(io)
+        streamTweets()
       }, 2 ** timeout)
-      streamTweets(io)
+      streamTweets()
     })
 })();
 

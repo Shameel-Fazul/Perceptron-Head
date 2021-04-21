@@ -2,9 +2,24 @@
 <html lang="en">
     <body>
         <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
         <script>
             const socket = io();
             socket.on('connect', () => console.log('[ML] > connected to the server'));
-        </script>
+
+            const extractor = ml5.featureExtractor('MobileNet', () => console.log('[ML] > feature extractor loaded'));
+            const knn = ml5.KNNClassifier();
+
+            socket.on('learn', (data) => {
+                const logits = featureExtractor.infer(data.image);
+                knnClassifier.addExample(logits, data.label);
+            });
+            socket.on('predict', (data) => {
+                const logits = featureExtractor.infer(data.image);
+                knn.classify(logits, (err, result) => {
+                    socket.emit('result', result.label);
+                });
+            });
+       </script>
     </body>
 </html>
