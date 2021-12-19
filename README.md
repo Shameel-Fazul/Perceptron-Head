@@ -1,2 +1,2 @@
-# Perceptron-Head
-A twitter bot with a neural network
+# Twitter KNN Classification
+A twitter bot that learns and predicts using KNN classification
